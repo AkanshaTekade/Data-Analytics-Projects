@@ -1,0 +1,84 @@
+# E-commerce Furniture Sales Analysis using MySQL 
+
+# 01_Database_Setup.sql
+# 1. Create Database
+create database E_commerce_Furniture;
+use e_commerce_furniture;
+
+# 2. Check Tables
+show tables;
+
+# 02_Data_Exploration.sql
+# Preview Dataset
+select * from ecommerce_furniture_dataset_2024 limit 10;
+
+# Total Records
+select count(*) AS total_records 
+from ecommerce_furniture_dataset_2024;
+
+# Unique Products
+select count(distinct productTitle) AS unique_products
+from ecommerce_furniture_dataset_2024;
+
+# 03_Data_Cleaning.sql
+# Remove Dollar Symbol
+UPDATE ecommerce_furniture_dataset_2024
+SET price = REPLACE(price, '$', '');
+
+UPDATE ecommerce_furniture_dataset_2024
+SET originalPrice = REPLACE(originalPrice, '$', '');
+
+# Convert Price to Decimal
+ALTER TABLE ecommerce_furniture_dataset_2024
+ADD price_clean DECIMAL(10,2);
+
+UPDATE ecommerce_furniture_dataset_2024
+SET price_clean = NULLIF(REPLACE(price,'$',''), '');
+
+ALTER TABLE ecommerce_furniture_dataset_2024
+DROP COLUMN price;
+
+ALTER TABLE ecommerce_furniture_dataset_2024
+CHANGE price_clean price DECIMAL(10,2);
+
+# Fix Column Name (BOM Issue)
+ALTER TABLE ecommerce_furniture_dataset_2024
+CHANGE `ï»¿"productTitle"` productTitle TEXT;
+
+# 04_Revenue_Analysis.sql
+# Total Revenue
+SELECT SUM(price * sold) AS total_revenue
+FROM ecommerce_furniture_dataset_2024;
+
+# Highest Revenue Product(Using View)
+CREATE VIEW revenue_view AS
+SELECT productTitle,
+       price,
+       sold,
+       (price * sold) AS revenue
+FROM ecommerce_furniture_dataset_2024;
+
+SELECT * FROM revenue_view
+ORDER BY revenue DESC
+LIMIT 1;
+
+# 05_Sales_Performance_Analysis.sql
+# Top 10 Selling Products
+SELECT productTitle, 
+sold AS total_units_sold
+FROM ecommerce_furniture_dataset_2024
+ORDER BY sold DESC
+LIMIT 10;
+
+# 06_Discount_Analysis.sql
+SELECT productTitle,
+       ROUND(((originalPrice - price) / originalPrice) * 100,2) AS discount_percent
+FROM ecommerce_furniture_dataset_2024
+WHERE originalPrice IS NOT NULL;
+
+# 07_Pricing_Insights.sql
+# Average Product Price
+SELECT AVG(price) AS avg_product_price
+FROM ecommerce_furniture_dataset_2024;
+
+select * from ecommerce_furniture_dataset_2024;
